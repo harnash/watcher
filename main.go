@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gorilla/handlers"
+	"github.com/pressly/chi/middleware"
 	"github.com/rs/xhandler"
 	"github.com/rs/xmux"
 	"golang.org/x/net/context"
@@ -22,8 +22,9 @@ func main() {
 	// Another context-aware middleware handler
 	c.UseC(xhandler.TimeoutHandler(2 * time.Second))
 
-	c.Use(func(next http.Handler) http.Handler {
-		return handlers.LoggingHandler(os.Stdout, next)
+	// Access logs
+	c.UseC(func(next xhandler.HandlerC) xhandler.HandlerC {
+		return middleware.Logger(next)
 	})
 
 	c.Use(handlers.RecoveryHandler())
@@ -32,7 +33,6 @@ func main() {
 
 	// Use c.Handler to terminate the chain with your final handler
 	mux.GET("/welcome/:name", xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, req *http.Request) {
-		panic("dsd")
 		fmt.Fprintf(w, "Welcome %s!", xmux.Param(ctx, "name"))
 	}))
 
