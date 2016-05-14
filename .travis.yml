@@ -1,6 +1,5 @@
 language: go
 sudo: false
-
 matrix:
   include:
     - go: 1.4
@@ -9,9 +8,14 @@ matrix:
     - go: tip
   allow_failures:
     - go: tip
-
+env:
+  global:
+    secure: SPElxYXT7M7+YXX/0RGMwS7f8Y4A3T181H0xLM8U7jC5PnAhq1/CuZK8G9g/NjFYHASI0beDdGpC1NfdnOZtYPDAfe5k48kNQ2H/Hh7JRvXQQPNGW/QkucN6DA44tVjv5bOWy5OZM9/Ei0sBIsIS2HNMyP3HemZIlyT9F1Vj2Hyv6EWjLgBTDH7ryMNMPgcb3ckDbdYZXLS3EwZRR2atcRwBTZ/fzV7XR7rS2S/w0Ri+hyiflCjDn5HKDQy46f80RWZQTZRIXmsgXdCR9dBOhQnSxaXx/UC+bE5wXdf3X+/JaAu43qHav2shkMkOIe99ZwztQnoVN+j5qWjdK3vppH88Ey2YkUu/UwZm6XJdOjfJ+IFPWsvqG4IeKnishzVPEDdqWs5d/fLMWukNcj+pfW6aO/1VoY+enYf0RRYrVM2XelyY4NdbAwe84/JWftEuTvsvTW6DgsR+wp39vCGdMq4+IA3m25ocinaoWpS3J8khMjueSwfdXViJPy8pwSyOPrkNjGoTE5lT/q4wiixz7ZyRtI7xi6eeVyd7XPIj8tEQ4uzxG+1swlhn2CdM12IAREZnNzByEcy/0nUzEfabfV8QXQQsLUd4IVzJkP96T7dVZuqEHHevbU48iRhqlvYj5PJQY4KuhtzMWy/jCUbB6fNiH30KYvzGEf/KKLtR0p4=
+install:
+    - go get golang.org/x/tools/cmd/cover
+    - go get github.com/mattn/goveralls
 script:
-  - go get -t -v ./...
-  - diff -u <(echo -n) <(gofmt -d .)
-  - go vet $(go list ./... | grep -v /vendor/)
-  - go test -v -race ./...
+    - go get -t -v ./...
+    - diff -u <(echo -n) <(gofmt -d .)
+    - go vet $(go list ./... | grep -v /vendor/)
+    - go test -v -race -covermode=count -coverprofile=coverage.out $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN ./...
