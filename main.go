@@ -3,13 +3,17 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/handlers"
-	"github.com/pressly/chi/middleware"
+	"github.com/rs/xaccess"
 	"github.com/rs/xhandler"
+	"github.com/rs/xlog"
 	"github.com/rs/xmux"
+	"github.com/rs/xstats"
+	"github.com/rs/xstats/dogstatsd"
 	"golang.org/x/net/context"
 )
 
@@ -23,9 +27,18 @@ func main() {
 	c.UseC(xhandler.TimeoutHandler(2 * time.Second))
 
 	// Access logs
-	c.UseC(func(next xhandler.HandlerC) xhandler.HandlerC {
-		return middleware.Logger(next)
-	})
+	c.UseC(xlog.NewHandler(xlog.Config{}))
+
+	// Stats
+	flushInterval := 5 * time.Second
+	tags := []string{"role:watcher"}
+	statsdWriter, err := net.Dial("udp", "127.0.0.1:8126")
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.UseC(xstats.NewHandler(dogstatsd.New(statsdWriter, flushInterval), tags))
+
+	c.UseC(xaccess.NewHandler())
 
 	c.Use(handlers.RecoveryHandler())
 
