@@ -13,7 +13,7 @@ import (
 	"github.com/rs/xlog"
 	"github.com/rs/xmux"
 	"github.com/rs/xstats"
-	"github.com/rs/xstats/dogstatsd"
+	"github.com/rs/xstats/telegraf"
 	"golang.org/x/net/context"
 )
 
@@ -32,11 +32,11 @@ func main() {
 	// Stats
 	flushInterval := 5 * time.Second
 	tags := []string{"role:watcher"}
-	statsdWriter, err := net.Dial("udp", "127.0.0.1:8126")
+	telegrafWriter, err := net.Dial("udp", "127.0.0.1:8125")
 	if err != nil {
 		log.Fatal(err)
 	}
-	c.UseC(xstats.NewHandler(dogstatsd.New(statsdWriter, flushInterval), tags))
+	c.UseC(xstats.NewHandler(telegraf.New(telegrafWriter, flushInterval), tags))
 
 	c.UseC(xaccess.NewHandler())
 
