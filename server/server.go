@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/handlers"
+	"github.com/harnash/watcher/config"
 	"github.com/harnash/watcher/logging"
 	"github.com/rs/xaccess"
 	"github.com/rs/xhandler"
@@ -19,7 +20,7 @@ import (
 )
 
 // Run server
-func Run(serverConfig Config) {
+func Run(config config.Config) {
 	c := xhandler.Chain{}
 
 	// Append a context-aware middleware handler
@@ -75,10 +76,9 @@ func Run(serverConfig Config) {
 		fmt.Fprintf(w, "Welcome %s!", userID)
 	}))
 
-	addr := fmt.Sprintf("%s:%d", serverConfig.ListenAddress, serverConfig.ListenPort)
-	logger.Infof("Listening on: %s", addr)
+	logger.Infof("Listening on: %s", config.Server.ListenAddr)
 
-	if err := http.ListenAndServe(addr, c.Handler(mux)); err != nil {
+	if err := http.ListenAndServe(config.Server.ListenAddr, c.Handler(mux)); err != nil {
 		log.Fatal(err)
 	}
 }

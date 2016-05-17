@@ -24,8 +24,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/harnash/watcher/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -55,19 +55,10 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" { // enable ability to specify config file via flag
-		log.Printf("Loading configuration file: %s", cfgFile)
-		viper.SetConfigFile(cfgFile)
+	cfg, err := config.Load(cfgFile)
+	if err != nil {
+		log.Fatalf("[FATAL] Error loading configuration: %s", err)
+		os.Exit(3)
 	}
-
-	viper.SetConfigName(".watcher") // name of config file (without extension)
-	viper.AddConfigPath("$HOME")    // adding home directory as first search path
-	viper.AutomaticEnv()            // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err != nil {
-		log.Println("No configuration file loaded")
-	} else {
-		log.Printf("Using config file: %s", viper.ConfigFileUsed())
-	}
+	config.AppConfig = *cfg
 }
