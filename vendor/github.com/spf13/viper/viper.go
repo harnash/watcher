@@ -31,6 +31,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/doublerebel/bellows" // PATCHED
 	"github.com/fsnotify/fsnotify"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cast"
@@ -611,7 +612,9 @@ func (v *Viper) UnmarshalKey(key string, rawVal interface{}) error {
 // on the fields of the structure are properly set.
 func Unmarshal(rawVal interface{}) error { return v.Unmarshal(rawVal) }
 func (v *Viper) Unmarshal(rawVal interface{}) error {
-	err := mapstructure.WeakDecode(v.AllSettings(), rawVal)
+	// PATCHED
+	expanded := bellows.Expand(v.AllSettings())
+	err := mapstructure.WeakDecode(expanded, rawVal)
 
 	if err != nil {
 		return err
@@ -917,8 +920,14 @@ func (v *Viper) SetDefault(key string, value interface{}) {
 func Set(key string, value interface{}) { v.Set(key, value) }
 func (v *Viper) Set(key string, value interface{}) {
 	// If alias passed in, then set the proper override
-	key = v.realKey(strings.ToLower(key))
-	v.override[key] = value
+	// PATCHED
+	// key = v.realKey(strings.ToLower(key))
+	// v.override[key] = value
+	flat := bellows.FlattenPrefixed(value, key)
+	for flatkey, flatval := range flat {
+		flatkey = v.realKey(strings.ToLower(flatkey))
+		v.defaults[flatkey] = flatval
+	}
 }
 
 // Viper will discover and load the configuration file from disk
