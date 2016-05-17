@@ -1,0 +1,2 @@
+"server.ListenAddress" = "localhost"
+"server.ListenPort" = 8080
