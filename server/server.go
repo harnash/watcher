@@ -75,10 +75,9 @@ func Run(serverConfig Config) {
 		fmt.Fprintf(w, "Welcome %s!", userID)
 	}))
 
-	addr := fmt.Sprintf("%s:%d", serverConfig.ListenAddress, serverConfig.ListenPort)
-	logger.Infof("Listening on: %s", addr)
+	logger.Infof("Listening on: %s", serverConfig.ListenAddress)
 
-	if err := http.ListenAndServe(addr, c.Handler(mux)); err != nil {
+	if err := http.ListenAndServe(serverConfig.ListenAddress, c.Handler(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
