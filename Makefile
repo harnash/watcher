@@ -47,12 +47,12 @@ ifeq ($(OS),Windows_NT)
 else
 	BUILD_TIME := `date +%FT%T%z`
 endif
-VERSION_PACKAGE := $(PROJECT_PATH)/main
+VERSION_PACKAGE := main
 LDFLAGS := -ldflags "-X $(VERSION_PACKAGE).Version=${VERSION_GIT} -X $(VERSION_PACKAGE).BuildTime=${BUILD_TIME}"
 
 .DEFAULT_GOAL: $(BINARY)
 
-$(BINARY): $(SOURCES) prepare
+$(BINARY): $(SOURCES)
 	go build ${LDFLAGS} -o ${BINARY} main.go
 
 $(GO_LINT):
