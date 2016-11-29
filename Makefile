@@ -1,16 +1,30 @@
 SOURCEDIR := .
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 # Go utilities
-GO_PATH := ${GOPATH}
-GO_PATH := $(realpath $(GO_PATH))
-GO_LINT := $(GO_PATH)/bin/golint
-GO_GODEP := $(GO_PATH)/bin/godep
-GO_BINDATA := $(GO_PATH)/bin/bindata
-GO_GINKGO := $(GO_PATH)/bin/ginkgo
+ifeq ($(OS),Windows_NT)
+	GO_PATH := $(subst \,/,${GOPATH})
+else
+	GO_PATH := ${GOPATH}
+endif
+
+# GO_PATH := $(realpath $(GO_PATH))
+ifeq ($(OS),Windows_NT)
+	BINARY_EXT := .exe
+else
+	BINARY_EXT :=
+endif
+GO_LINT := $(GO_PATH)/bin/golint$(BINARY_EXT)
+GO_GODEP := $(GO_PATH)/bin/godep$(BINARY_EXT)
+GO_BINDATA := $(GO_PATH)/bin/bindata$(BINARY_EXT)
+GO_GINKGO := $(GO_PATH)/bin/ginkgo$(BINARY_EXT)
 
 # Handling project dirs and names
 ROOT_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
-PROJECT_PATH := $(strip $(subst $(GO_PATH)/src/,, $(realpath $(ROOT_DIR))))
+ifeq ($(OS),Windows_NT)
+	ROOT_DIR := $(subst \,/,${ROOT_DIR})
+endif
+PROJECT_PATH := $(strip $(subst $(GO_PATH)/src/,, $(ROOT_DIR)))
+PROJECT_PATH := $(patsubst %/,%, $(PROJECT_PATH))
 PROJECT_NAME := $(lastword $(subst /, , $(PROJECT_PATH)))
 
 BINARY := bin/$(PROJECT_NAME)
@@ -21,8 +35,13 @@ TARGETS_LINT := $(patsubst %,lint-%, $(TARGETS))
 TARGETS_VET  := $(patsubst %,vet-%, $(TARGETS))
 TARGETS_FMT  := $(patsubst %,fmt-%, $(TARGETS))
 
+ifeq ($(OS),Windows_NT)
+	VERSION_GIT := $(shell cmd /C 'git describe --always --tags')
+else
+	VERSION_GIT := $(shell sh -c 'git describe --always --tags')
+endif
+
 # Injecting project version and build time
-VERSION_GIT := $(shell sh -c 'git describe --always --tags')
 BUILD_TIME := `date +%FT%T%z`
 VERSION_PACKAGE := $(PROJECT_PATH)/main
 LDFLAGS := -ldflags "-X $(VERSION_PACKAGE).Version=${VERSION_GIT} -X $(VERSION_PACKAGE).BuildTime=${BUILD_TIME}"
@@ -69,7 +88,7 @@ fmt: $(TARGETS_FMT)
 # @go fmt
 
 $(TARGETS_FMT): fmt-%: %
-	@gofmt -s -w $</*.go
+	@gofmt -s -w $</
 
 lint: $(GO_LINT) $(TARGETS_LINT)
 # @golint
