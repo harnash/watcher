@@ -27,7 +27,7 @@ PROJECT_PATH := $(strip $(subst $(GO_PATH)/src/,, $(ROOT_DIR)))
 PROJECT_PATH := $(patsubst %/,%, $(PROJECT_PATH))
 PROJECT_NAME := $(lastword $(subst /, , $(PROJECT_PATH)))
 
-BINARY := bin/$(PROJECT_NAME)
+BINARY := bin/$(PROJECT_NAME)$(BINARY_EXT)
 
 TARGETS := $(shell go list ./... | grep -v ^$(PROJECT_PATH)/vendor | sed s!$(PROJECT_PATH)/!! | grep -v $(PROJECT_PATH))
 TARGETS_TEST := $(patsubst %,test-%, $(TARGETS))
@@ -42,7 +42,11 @@ else
 endif
 
 # Injecting project version and build time
-BUILD_TIME := `date +%FT%T%z`
+ifeq ($(OS),Windows_NT)
+	BUILD_TIME := $(shell PowerShell -Command "get-date -format yyyy-MM-ddTHH:mm:SSzzz")
+else
+	BUILD_TIME := `date +%FT%T%z`
+endif
 VERSION_PACKAGE := $(PROJECT_PATH)/main
 LDFLAGS := -ldflags "-X $(VERSION_PACKAGE).Version=${VERSION_GIT} -X $(VERSION_PACKAGE).BuildTime=${BUILD_TIME}"
 
@@ -79,7 +83,7 @@ vet: $(TARGETS_VET)
 # @go vet
 
 $(TARGETS_VET): vet-%: %
-	@go vet $</*.go
+	@go vet $</
 
 fmt-check:
 	@test -z "$$(gofmt -s -l $(TARGETS) | tee /dev/stderr)"
