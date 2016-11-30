@@ -1,12 +1,16 @@
 {
 	"ImportPath": "github.com/harnash/watcher",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v62",
+	"GodepVersion": "v74",
 	"Deps": [
 		{
 			"ImportPath": "github.com/BurntSushi/toml",
 			"Comment": "v0.2.0-9-gf0aeabc",
 			"Rev": "f0aeabca5a127c4078abb8c8d64298b147264b55"
+		},
+		{
+			"ImportPath": "github.com/doublerebel/bellows",
+			"Rev": "f177d92a03d33226a1e1777e4b3a5d824bd2598f"
 		},
 		{
 			"ImportPath": "github.com/fsnotify/fsnotify",
